@@ -1,10 +1,9 @@
 // src/models/Pelatihan.ts
 
-import { RowDataPacket } from 'mysql2/promise';
 import { query } from '../config/database';
 import { Pelatihan } from '../types';
 
-export interface PelatihanRow extends RowDataPacket, Pelatihan {}
+export interface PelatihanRow extends Pelatihan {}
 
 export class PelatihanModel {
   static async findById(id: number): Promise<Pelatihan | null> {
@@ -24,7 +23,7 @@ export class PelatihanModel {
 
   static async getCount(): Promise<number> {
     const results = await query<any>('SELECT COUNT(*) as count FROM pelatihan');
-    return results[0].count;
+    return Number(results[0].count);
   }
 
   static async create(

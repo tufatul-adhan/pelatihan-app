@@ -447,12 +447,12 @@ Update Component State
 │     (npm start on localhost:3000)   │
 └─────────────────────────────────────┘
             │
-            │ npm run build
+            │ npm --prefix frontend run build
             │
             ▼
 ┌─────────────────────────────────────┐
 │     Production Build                │
-│     (Optimized in /build folder)    │
+│  (Optimized in /frontend/build)     │
 └─────────────────────────────────────┘
             │
             │ Deploy to Server

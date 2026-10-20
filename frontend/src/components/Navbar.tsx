@@ -1,12 +1,13 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Navbar as BsNavbar, Container, Nav, Dropdown } from 'react-bootstrap';
-import { LayoutDashboard, LogIn, LogOut, UserPlus } from 'lucide-react';
+import { LayoutDashboard, LogIn, LogOut } from 'lucide-react';
 import { useAuth } from '../hooks';
 import { companyProfile } from '../content/companyProfile';
+import { publicAsset } from '../utils/publicPath';
 
 const Navbar: React.FC = () => {
-  const companyLogo = '/assets/logo/logo-pipu.png';
+  const companyLogo = publicAsset('/assets/logo/logo-pipu.png');
   const location = useLocation();
   const { isAuthenticated, user, logout } = useAuth();
 

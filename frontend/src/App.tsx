@@ -5,11 +5,12 @@ import { ToastProvider } from './components';
 import Navbar from './components/Navbar';
 import { ProtectedRoute, LoadingSpinner } from './components';
 import { companyProfile } from './content/companyProfile';
+import { appPath, getRouterBasename, publicAsset } from './utils/publicPath';
 import HomePage from './pages/HomePage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 
-const COMPANY_LOGO = '/assets/logo/logo-pipu.png';
+const COMPANY_LOGO = publicAsset('/assets/logo/logo-pipu.png');
 
 // Lazy load pages that aren't needed immediately
 const TrainingListPage = lazy(() => import('./pages/TrainingListPage'));
@@ -53,7 +54,7 @@ class AppErrorBoundary extends React.Component<
               <p className="section-copy mb-4">
                 Silakan muat ulang halaman. Jika masih terjadi, coba kembali ke beranda.
               </p>
-              <button className="btn btn-primary" onClick={() => window.location.assign('/')}>
+              <button className="btn btn-primary" onClick={() => window.location.assign(appPath('/'))}>
                 Kembali ke Beranda
               </button>
             </div>
@@ -258,7 +259,7 @@ function App() {
   return (
     <AuthProvider>
       <ToastProvider>
-        <Router>
+        <Router basename={getRouterBasename()}>
           <MotionObserver />
           <AppShell />
         </Router>

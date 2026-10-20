@@ -1,10 +1,9 @@
 // src/models/User.ts
 
-import { RowDataPacket } from 'mysql2/promise';
 import { query } from '../config/database';
 import { User } from '../types';
 
-export interface UserRow extends RowDataPacket, User {}
+export interface UserRow extends User {}
 
 export class UserModel {
   static async findByEmail(email: string): Promise<User | null> {

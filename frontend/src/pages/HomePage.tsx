@@ -8,30 +8,31 @@ import trainingService from '../services/trainingService';
 import { Training } from '../types';
 import { companyProfile } from '../content/companyProfile';
 import { formatRupiah } from '../utils/currency';
+import { publicAsset } from '../utils/publicPath';
 
 const activityPhotos = [
-  '/assets/kegiatan/kegiatan-01.jpeg',
-  '/assets/kegiatan/kegiatan-02.jpeg',
-  '/assets/kegiatan/kegiatan-03.jpeg',
-  '/assets/kegiatan/kegiatan-04.jpeg',
-  '/assets/kegiatan/kegiatan-05.jpeg',
-  '/assets/kegiatan/kegiatan-06.jpeg',
-  '/assets/kegiatan/kegiatan-07.jpeg',
-  '/assets/kegiatan/kegiatan-08.jpeg',
-  '/assets/kegiatan/kegiatan-09.jpeg',
-  '/assets/kegiatan/kegiatan-10.jpeg',
-  '/assets/kegiatan/kegiatan-11.jpeg',
-  '/assets/kegiatan/kegiatan-12.jpeg',
-  '/assets/kegiatan/kegiatan-13.jpeg',
-  '/assets/kegiatan/kegiatan-14.jpeg',
-  '/assets/kegiatan/kegiatan-15.jpeg',
-  '/assets/kegiatan/kegiatan-16.jpeg',
-  '/assets/kegiatan/kegiatan-17.jpeg',
-  '/assets/kegiatan/kegiatan-18.jpeg',
-  '/assets/kegiatan/kegiatan-19.jpeg',
-  '/assets/kegiatan/kegiatan-20.jpeg',
-  '/assets/kegiatan/kegiatan-21.jpeg',
-  '/assets/kegiatan/kegiatan-22.jpeg',
+  publicAsset('/assets/kegiatan/kegiatan-01.jpeg'),
+  publicAsset('/assets/kegiatan/kegiatan-02.jpeg'),
+  publicAsset('/assets/kegiatan/kegiatan-03.jpeg'),
+  publicAsset('/assets/kegiatan/kegiatan-04.jpeg'),
+  publicAsset('/assets/kegiatan/kegiatan-05.jpeg'),
+  publicAsset('/assets/kegiatan/kegiatan-06.jpeg'),
+  publicAsset('/assets/kegiatan/kegiatan-07.jpeg'),
+  publicAsset('/assets/kegiatan/kegiatan-08.jpeg'),
+  publicAsset('/assets/kegiatan/kegiatan-09.jpeg'),
+  publicAsset('/assets/kegiatan/kegiatan-10.jpeg'),
+  publicAsset('/assets/kegiatan/kegiatan-11.jpeg'),
+  publicAsset('/assets/kegiatan/kegiatan-12.jpeg'),
+  publicAsset('/assets/kegiatan/kegiatan-13.jpeg'),
+  publicAsset('/assets/kegiatan/kegiatan-14.jpeg'),
+  publicAsset('/assets/kegiatan/kegiatan-15.jpeg'),
+  publicAsset('/assets/kegiatan/kegiatan-16.jpeg'),
+  publicAsset('/assets/kegiatan/kegiatan-17.jpeg'),
+  publicAsset('/assets/kegiatan/kegiatan-18.jpeg'),
+  publicAsset('/assets/kegiatan/kegiatan-19.jpeg'),
+  publicAsset('/assets/kegiatan/kegiatan-20.jpeg'),
+  publicAsset('/assets/kegiatan/kegiatan-21.jpeg'),
+  publicAsset('/assets/kegiatan/kegiatan-22.jpeg'),
 ];
 
 const HomePage: React.FC = () => {
@@ -51,7 +52,7 @@ const HomePage: React.FC = () => {
         setLoading(true);
         setError(null);
         const data = await trainingService.getTrainings({ forceRefresh: true, limit: 100 });
-        setTrainings(data.slice(0, 3));
+        setTrainings(data);
       } catch (err) {
         console.error(err);
         setError('Gagal memuat pelatihan unggulan');

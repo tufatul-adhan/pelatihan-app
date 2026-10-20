@@ -1,84 +1,59 @@
-const mysql = require('mysql2/promise');
-const bcrypt = require('bcrypt');
+const { Pool } = require('pg');
+require('dotenv').config();
 
-const seedDatabase = async () => {
-  const connection = await mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: '',
-    database: 'db_pelatihan',
-  });
+const pool = new Pool({
+  host: process.env.DB_HOST || 'localhost',
+  port: Number(process.env.DB_PORT || 5432),
+  user: process.env.DB_USER || 'postgres',
+  password: process.env.DB_PASSWORD || undefined,
+  database: process.env.DB_NAME || 'db_pelatihan',
+});
 
+const trainings = [
+  [
+    'Karakter Building',
+    'Program untuk membangun karakter, disiplin, etika, tanggung jawab, dan kerja sama peserta melalui materi dan aktivitas terarah.',
+  ],
+  [
+    'Outbond',
+    'Kegiatan luar ruang yang mendorong komunikasi, kekompakan tim, kepercayaan diri, dan kemampuan bekerja sama. Bentuk kegiatan disesuaikan dengan kebutuhan peserta.',
+  ],
+  [
+    'Leadership',
+    'Pelatihan dasar kepemimpinan untuk mengembangkan komunikasi, tanggung jawab, pengambilan keputusan, dan kemampuan mengarahkan tim.',
+  ],
+  [
+    'Basic Mentality',
+    'Pembinaan mental dasar yang menekankan disiplin, integritas, ketahanan diri, etika, serta kesiapan menjalankan tanggung jawab.',
+  ],
+  [
+    'LDKS',
+    'Latihan Dasar Kepemimpinan Siswa untuk melatih jiwa kepemimpinan, kedisiplinan, tanggung jawab, kerja sama, dan wawasan kebangsaan.',
+  ],
+];
+
+async function seedDatabase() {
   try {
-    console.log('Seeding database...');
-
-    // Add sample admin user
-    const hashedPassword = await bcrypt.hash('admin123', 10);
-    await connection.query(
-      'INSERT IGNORE INTO users (nama, email, password, role) VALUES (?, ?, ?, ?)',
-      ['Admin User', 'admin@pelatihan.com', hashedPassword, 'admin']
-    );
-    console.log('✅ Admin user created');
-
-    // Add sample training data
-    const trainings = [
-      {
-        nama_pelatihan: 'Leadership & Management',
-        deskripsi: 'Program pelatihan kepemimpinan dan manajemen untuk meningkatkan skill kepemimpinan Anda dalam organisasi.',
-        harga: 5000000,
-        duration: '3 hari',
-        tanggal: new Date('2026-07-15 09:00:00'),
-      },
-      {
-        nama_pelatihan: 'Digital Marketing Essentials',
-        deskripsi: 'Pelajari strategi digital marketing terkini untuk meningkatkan brand awareness dan penjualan bisnis Anda.',
-        harga: 3500000,
-        duration: '2 hari',
-        tanggal: new Date('2026-07-20 09:00:00'),
-      },
-      {
-        nama_pelatihan: 'Data Analysis & Business Intelligence',
-        deskripsi: 'Kuasai teknik analisis data dan business intelligence untuk membuat keputusan bisnis yang lebih baik.',
-        harga: 6000000,
-        duration: '4 hari',
-        tanggal: new Date('2026-08-01 09:00:00'),
-      },
-      {
-        nama_pelatihan: 'Public Speaking & Presentation',
-        deskripsi: 'Tingkatkan kemampuan public speaking dan presentasi Anda agar lebih percaya diri dan efektif.',
-        harga: 2500000,
-        duration: '2 hari',
-        tanggal: new Date('2026-07-25 09:00:00'),
-      },
-      {
-        nama_pelatihan: 'Project Management Professional',
-        deskripsi: 'Sertifikasi PMP untuk mengelola proyek secara profesional dan efisien sesuai standar internasional.',
-        harga: 7500000,
-        duration: '5 hari',
-        tanggal: new Date('2026-08-10 09:00:00'),
-      },
-    ];
-
-    for (const training of trainings) {
-      await connection.query(
-        'INSERT IGNORE INTO pelatihan (nama_pelatihan, deskripsi, harga, duration, tanggal) VALUES (?, ?, ?, ?, ?)',
-        [
-          training.nama_pelatihan,
-          training.deskripsi,
-          training.harga,
-          training.duration,
-          training.tanggal,
-        ]
+    let inserted = 0;
+    for (const [name, description] of trainings) {
+      const result = await pool.query(
+        `INSERT INTO pelatihan (nama_pelatihan, deskripsi, harga, duration, tanggal)
+         SELECT $1, $2, 0, 'Disesuaikan', CURRENT_TIMESTAMP
+         WHERE NOT EXISTS (
+           SELECT 1 FROM pelatihan WHERE LOWER(nama_pelatihan) = LOWER($1::varchar)
+         )
+         RETURNING id`,
+        [name, description]
       );
+      inserted += result.rowCount || 0;
     }
-    console.log('✅ Sample trainings added successfully!');
-
-    console.log('\n✅ Database seeding completed!');
-  } catch (error) {
-    console.error('❌ Error:', error.message);
+    console.log(`${inserted} program mockup ditambahkan; harga ditandai Hubungi kami.`);
   } finally {
-    await connection.end();
+    await pool.end();
   }
-};
+}
 
-seedDatabase();
+seedDatabase().catch((error) => {
+  console.error('Gagal mengisi data contoh:', error.message);
+  process.exitCode = 1;
+});

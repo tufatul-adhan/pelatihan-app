@@ -1,5 +1,6 @@
 import axios, { AxiosInstance } from 'axios';
 import { TrainingRequest, ApiResponse, Permintaan } from '../types';
+import { appPath } from '../utils/publicPath';
 
 const API_BASE_URL = 'http://localhost:3001/api';
 
@@ -31,8 +32,8 @@ class RequestService {
         if (axios.isAxiosError(error) && error.response?.status === 401) {
           localStorage.removeItem('authToken');
           localStorage.removeItem('authUser');
-          if (window.location.pathname !== '/login') {
-            window.location.href = '/login';
+          if (!window.location.pathname.endsWith('/login')) {
+            window.location.href = appPath('/login');
           }
         }
         return Promise.reject(error);

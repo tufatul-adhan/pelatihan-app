@@ -1,36 +1,30 @@
-const mysql = require('mysql2/promise');
+const { Pool } = require('pg');
 const bcrypt = require('bcrypt');
+require('dotenv').config();
 
-const createUser = async () => {
-  const connection = await mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: '',
-    database: 'db_pelatihan'
-  });
+const pool = new Pool({
+  host: process.env.DB_HOST || 'localhost',
+  port: Number(process.env.DB_PORT || 5432),
+  user: process.env.DB_USER || 'postgres',
+  password: process.env.DB_PASSWORD || undefined,
+  database: process.env.DB_NAME || 'db_pelatihan',
+});
 
+async function createUser() {
   try {
-    const hashedPassword = await bcrypt.hash('password123', 10);
-    
-    await connection.query(
-      'INSERT INTO users (nama, email, password, role) VALUES (?, ?, ?, ?)',
-      ['Test User', 'test@example.com', hashedPassword, 'user']
+    const hash = await bcrypt.hash('password123', 10);
+    await pool.query(
+      `INSERT INTO users (nama, email, password, role)
+       VALUES ($1, $2, $3, 'user') ON CONFLICT (email) DO NOTHING`,
+      ['Test User', 'test@example.com', hash]
     );
-    
-    console.log('✅ User berhasil dibuat!');
-    console.log('Email: test@example.com');
-    console.log('Password: password123');
-  } catch (error) {
-    if (error.code === 'ER_DUP_ENTRY') {
-      console.log('⚠️ User sudah ada');
-      console.log('Email: test@example.com');
-      console.log('Password: password123');
-    } else {
-      console.error('❌ Error:', error.message);
-    }
+    console.log('Akun uji tersedia: test@example.com');
   } finally {
-    await connection.end();
+    await pool.end();
   }
-};
+}
 
-createUser();
+createUser().catch((error) => {
+  console.error('Gagal membuat user uji:', error.message);
+  process.exitCode = 1;
+});

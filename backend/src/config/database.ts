@@ -1,32 +1,40 @@
-// src/config/database.ts
-
-import mysql from 'mysql2/promise';
+import { Pool, QueryResult } from 'pg';
 import dotenv from 'dotenv';
+import path from 'path';
 
-dotenv.config();
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
-const pool = mysql.createPool({
+const pool = new Pool({
   host: process.env.DB_HOST || 'localhost',
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || '',
+  port: Number(process.env.DB_PORT || 5432),
+  user: process.env.DB_USER || 'postgres',
+  password: process.env.DB_PASSWORD || undefined,
   database: process.env.DB_NAME || 'db_pelatihan',
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0,
+  max: 10,
 });
 
-export const getConnection = async () => {
-  return pool.getConnection();
-};
+export const query = async <T = any>(sql: string, values: any[] = []): Promise<T> => {
+  // Keep model SQL readable while translating the existing positional placeholders.
+  let parameterIndex = 0;
+  const postgresSql = sql.replace(/\?/g, () => `$${++parameterIndex}`);
+  const isInsert = /^\s*INSERT\s/i.test(postgresSql);
+  const statement = isInsert && !/\bRETURNING\b/i.test(postgresSql)
+    ? `${postgresSql} RETURNING id`
+    : postgresSql;
+  const result: QueryResult = await pool.query(statement, values);
 
-export const query = async <T = any>(sql: string, values?: any[]): Promise<T> => {
-  const connection = await getConnection();
-  try {
-    const [results] = await connection.execute(sql, values || []);
-    return results as T;
-  } finally {
-    connection.release();
+  if (/^\s*SELECT\s/i.test(statement)) {
+    return result.rows as T;
   }
+
+  if (isInsert) {
+    return {
+      insertId: result.rows[0]?.id === undefined ? undefined : Number(result.rows[0].id),
+      affectedRows: result.rowCount || 0,
+    } as T;
+  }
+
+  return { affectedRows: result.rowCount || 0 } as T;
 };
 
 export default pool;

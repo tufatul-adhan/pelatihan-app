@@ -34,36 +34,26 @@ app.use(notFoundHandler);
 // Error handler
 app.use(errorHandler);
 
-const ensureDatabaseSchema = async () => {
-  const connection = await pool.getConnection();
+// Verify PostgreSQL before opening the API port so a database outage cannot
+// make the backend appear ready while every database endpoint is failing.
+const startServer = async (): Promise<void> => {
   try {
-    await connection.query(
-      'ALTER TABLE pelatihan ADD COLUMN duration VARCHAR(120) NULL AFTER harga'
-    );
-    console.log('Database schema updated: pelatihan.duration created');
-  } catch (error: any) {
-    // MySQL ER_DUP_FIELDNAME = 1060 (column already exists)
-    if (error?.errno !== 1060) {
-      console.error('Failed to ensure pelatihan.duration column:', error?.message || error);
+    if (!process.env.DB_PASSWORD) {
+      throw new Error('DB_PASSWORD belum diisi di backend/.env. Isi dengan password akun PostgreSQL.');
     }
-  } finally {
-    connection.release();
+    await pool.query('SELECT 1');
+    console.log('Database connection successful');
+    app.listen(PORT, () => {
+      console.log(`Training Service Backend API running on http://localhost:${PORT}`);
+    });
+  } catch (error) {
+    console.error('Database connection failed:', (error as Error).message || error);
+    await pool.end();
+    process.exitCode = 1;
   }
 };
 
-// Start server
-app.listen(PORT, async () => {
-  try {
-    const connection = await pool.getConnection();
-    connection.release();
-    console.log('Database connection successful');
-    await ensureDatabaseSchema();
-  } catch (error) {
-    console.error('Database connection failed:', error);
-  }
-
-  console.log(`Training Service Backend API running on http://localhost:${PORT}`);
-});
+void startServer();
 
 // Graceful shutdown
 process.on('SIGINT', async () => {

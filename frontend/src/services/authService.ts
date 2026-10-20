@@ -1,5 +1,6 @@
 import axios, { AxiosInstance } from 'axios';
 import { AuthResponse, User } from '../types';
+import { appPath } from '../utils/publicPath';
 
 const API_BASE_URL = 'http://localhost:3001/api';
 
@@ -32,7 +33,7 @@ axiosInstance.interceptors.response.use(
       // Token expired or invalid - clear storage
       localStorage.removeItem('authToken');
       localStorage.removeItem('authUser');
-      window.location.href = '/login';
+      window.location.href = appPath('/login');
     }
     return Promise.reject(error);
   }

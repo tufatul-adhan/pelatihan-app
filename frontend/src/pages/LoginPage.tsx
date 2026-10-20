@@ -1,31 +1,21 @@
 import React, { useCallback, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { CheckCircle2, UserPlus } from 'lucide-react';
+import { CheckCircle2, LogIn } from 'lucide-react';
 import { useAuth } from '../hooks';
 import { Alert, Button, Input } from '../components';
+import { publicAsset } from '../utils/publicPath';
 
-export const RegisterPage: React.FC = () => {
-  const companyLogo = '/assets/logo/logo-pipu.png';
+export const LoginPage: React.FC = () => {
+  const companyLogo = publicAsset('/assets/logo/logo-pipu.png');
   const navigate = useNavigate();
-  const { register, isLoading } = useAuth();
+  const { login, isLoading } = useAuth();
 
-  const [formData, setFormData] = useState({
-    nama: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-  });
+  const [formData, setFormData] = useState({ email: '', password: '' });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   const validateForm = useCallback((): boolean => {
     const newErrors: Record<string, string> = {};
-
-    if (!formData.nama) {
-      newErrors.nama = 'Nama harus diisi';
-    } else if (formData.nama.length < 3) {
-      newErrors.nama = 'Nama minimal 3 karakter';
-    }
 
     if (!formData.email) {
       newErrors.email = 'Email harus diisi';
@@ -37,12 +27,6 @@ export const RegisterPage: React.FC = () => {
       newErrors.password = 'Password harus diisi';
     } else if (formData.password.length < 6) {
       newErrors.password = 'Password minimal 6 karakter';
-    }
-
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = 'Konfirmasi password harus diisi';
-    } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Password tidak cocok';
     }
 
     setErrors(newErrors);
@@ -65,17 +49,25 @@ export const RegisterPage: React.FC = () => {
 
       try {
         setNotification(null);
-        await register(formData.nama, formData.email, formData.password);
-        setNotification({ type: 'success', message: 'Pendaftaran berhasil. Mengarahkan...' });
-        setTimeout(() => navigate('/'), 900);
+        await login(formData.email, formData.password);
+        setNotification({ type: 'success', message: 'Login berhasil. Mengarahkan...' });
+        let parsedUser: { role?: string } | null = null;
+        try {
+          const storedUser = localStorage.getItem('authUser');
+          parsedUser = storedUser ? JSON.parse(storedUser) : null;
+        } catch (parseError) {
+          parsedUser = null;
+        }
+        const targetPath = parsedUser?.role === 'admin' ? '/admin' : '/';
+        setTimeout(() => navigate(targetPath), 900);
       } catch (error) {
         setNotification({
           type: 'error',
-          message: error instanceof Error ? error.message : 'Pendaftaran gagal. Silakan coba lagi.',
+          message: error instanceof Error ? error.message : 'Login gagal. Silakan coba lagi.',
         });
       }
     },
-    [formData, register, navigate, validateForm]
+    [formData, login, navigate, validateForm]
   );
 
   return (
@@ -86,14 +78,14 @@ export const RegisterPage: React.FC = () => {
             <aside className="auth-visual-panel h-100">
               <div>
                 <img src={companyLogo} alt="Logo PT Indonesia Pelatihan Unggul" className="auth-visual-logo mb-4" />
-                <p className="auth-visual-kicker mb-3">Portal Pelatihan</p>
-                <h2 className="auth-visual-title mb-3">Daftarkan akun untuk memulai pengajuan program.</h2>
+                <p className="auth-visual-kicker mb-3">Admin & Peserta Portal</p>
+                <h2 className="auth-visual-title mb-3">Akses cepat untuk mengelola program pelatihan.</h2>
                 <p className="auth-visual-copy mb-4">
-                  Simpan data kontak, ajukan kebutuhan pelatihan, dan permudah proses koordinasi dengan tim.
+                  Pantau pengajuan, kelola katalog, dan pastikan setiap kebutuhan pelatihan diproses rapi.
                 </p>
               </div>
               <div className="auth-visual-list">
-                {['Form pengajuan terarah', 'Kontak perusahaan tersimpan', 'Proses tindak lanjut lebih rapi'].map((item) => (
+                {['Dashboard admin aman', 'Data pelatihan terstruktur', 'Pengajuan peserta lebih cepat'].map((item) => (
                   <div className="auth-visual-item" key={item}>
                     <CheckCircle2 size={18} />
                     <span>{item}</span>
@@ -107,8 +99,8 @@ export const RegisterPage: React.FC = () => {
             <div className="surface-card auth-card p-4 p-lg-5 h-100">
               <div className="text-center mb-4">
                 <img src={companyLogo} alt="Logo PT Indonesia Pelatihan Unggul" className="brand-logo auth-card-logo mb-3" />
-                <h1 className="h3 fw-bold mb-2">Buat akun baru</h1>
-                <p className="section-copy mb-0">Ajukan dan pantau kebutuhan pelatihan perusahaan Anda.</p>
+                <h1 className="h3 fw-bold mb-2">Masuk ke akun Anda</h1>
+                <p className="section-copy mb-0">Kelola permintaan dan program pelatihan dengan aman.</p>
               </div>
 
               {notification && (
@@ -116,17 +108,6 @@ export const RegisterPage: React.FC = () => {
               )}
 
               <form onSubmit={handleSubmit}>
-                <Input
-                  label="Nama Lengkap"
-                  type="text"
-                  name="nama"
-                  value={formData.nama}
-                  onChange={handleChange}
-                  error={errors.nama}
-                  placeholder="Nama Anda"
-                  required
-                />
-
                 <Input
                   label="Email"
                   type="email"
@@ -145,31 +126,20 @@ export const RegisterPage: React.FC = () => {
                   value={formData.password}
                   onChange={handleChange}
                   error={errors.password}
-                  placeholder="Minimal 6 karakter"
-                  required
-                />
-
-                <Input
-                  label="Konfirmasi Password"
-                  type="password"
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  error={errors.confirmPassword}
-                  placeholder="Ulangi password"
+                  placeholder="Masukkan password"
                   required
                 />
 
                 <Button type="submit" className="w-100 mt-2 auth-submit-btn" loading={isLoading} disabled={isLoading}>
-                  <UserPlus size={17} />
-                  {isLoading ? 'Membuat akun...' : 'Daftar'}
+                  <LogIn size={17} />
+                  {isLoading ? 'Memproses...' : 'Masuk'}
                 </Button>
               </form>
 
               <div className="text-center text-muted mt-4 mb-0">
-                <p className="mb-2">Sudah punya akun?</p>
-                <Link to="/login" className="btn btn-outline-primary auth-switch-btn">
-                  Masuk
+                <p className="mb-2">Belum punya akun?</p>
+                <Link to="/register" className="btn btn-outline-primary auth-switch-btn">
+                  Daftar sekarang
                 </Link>
               </div>
             </div>

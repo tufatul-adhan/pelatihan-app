@@ -1,10 +1,9 @@
 // src/models/Permintaan.ts
 
-import { RowDataPacket } from 'mysql2/promise';
 import { query } from '../config/database';
 import { Permintaan } from '../types';
 
-export interface PermintaanRow extends RowDataPacket, Permintaan {}
+export interface PermintaanRow extends Permintaan {}
 
 export class PermintaanModel {
   static async findById(id: number): Promise<Permintaan | null> {
@@ -45,7 +44,7 @@ export class PermintaanModel {
 
   static async getCount(): Promise<number> {
     const results = await query<any>('SELECT COUNT(*) as count FROM permintaan');
-    return results[0].count;
+    return Number(results[0].count);
   }
 
   static async getCountByUserId(userId: number): Promise<number> {
@@ -53,7 +52,7 @@ export class PermintaanModel {
       'SELECT COUNT(*) as count FROM permintaan WHERE user_id = ?',
       [userId]
     );
-    return results[0].count;
+    return Number(results[0].count);
   }
 
   static async create(
