@@ -1,9 +1,11 @@
 # Pelatihan App
 
+PT. Indonesia Pelatihan Unggul
+
 Repository ini memisahkan aplikasi frontend dan backend:
 
-- `frontend/` — aplikasi React dan konfigurasi frontend.
-- `backend/` — API Node.js/TypeScript dan konfigurasi backend.
+- `frontend/` - aplikasi React dan konfigurasi frontend.
+- `backend/` - API Node.js/TypeScript dan konfigurasi backend.
 
 Jalankan frontend dari root repository:
 
